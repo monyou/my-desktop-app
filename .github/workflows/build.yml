@@ -1,8 +1,9 @@
-name: Build Desktop Apps
+name: Build and Release Desktop Apps
 
 on:
   push:
-    branches: [release]
+    branches:
+      - release
 
 jobs:
   release:
@@ -20,8 +21,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Linux environments require essential build tools and GTK/Webkit headers
-      # so Electrobun can bind to the native desktop shell
       - name: Install Linux Build Dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -36,20 +35,20 @@ jobs:
       - name: Install Project Dependencies
         run: bun install
 
-      - name: Compile SvelteKit Frontend
+      - name: Compile Svelte Frontend
         run: bun run build
 
       - name: Package Native Desktop Application
         run: bunx electrobun build --env=stable
 
-      - name: Upload Binaries Direct to GitHub Release
+      - name: Upload Binaries to Continuous Release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # The 'gh release create' command gracefully creates the release if it doesn't exist,
-          # or simply uploads new files to it if another OS runner already created it.
-          gh release create ${{ github.ref_name }} artifacts/* \
-            --title "Release ${{ github.ref_name }}" \
-            --generate-notes \
+          # Creates or updates a single rolling release named "latest-build"
+          gh release create latest-build artifacts/* \
+            --title "Continuous Build (Bleeding Edge)" \
+            --notes "Automated build from the latest commit on the release branch." \
+            --prerelease \
             --clobber
