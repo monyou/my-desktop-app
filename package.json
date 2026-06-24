@@ -5,6 +5,7 @@
     "description": "Electrobun app with Svelte and Vite HMR",
     "scripts": {
         "start": "vite build && electrobun dev",
+        "build": "vite build",
         "dev": "electrobun dev --watch",
         "dev:hmr": "concurrently \"bun run hmr\" \"bun run start\"",
         "hmr": "vite --port 5173",
