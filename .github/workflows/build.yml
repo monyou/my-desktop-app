@@ -45,8 +45,8 @@ jobs:
         with:
           name: App-${{ matrix.os }}
           path: |
-            dist/*.dmg
-            dist/*.exe
-            dist/*linux*
-            dist/*.deb
-            dist/*.AppImage
+            artifacts/*.dmg
+            artifacts/*.exe
+            artifacts/*linux*
+            artifacts/*.deb
+            artifacts/*.AppImage
