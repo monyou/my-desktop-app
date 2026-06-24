@@ -4,7 +4,7 @@ export default {
     app: {
         name: "my-desktop-app",
         identifier: "my-desktop-app.electrobun.dev",
-        version: "1.0.2",
+        version: "1.0.3",
     },
     build: {
         // Vite builds to dist/, we copy from there
