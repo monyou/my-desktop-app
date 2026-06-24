@@ -9,10 +9,12 @@ jobs:
     name: Build Cross-Platform Targets
     strategy:
       matrix:
-        # Added ubuntu-latest to spin up a native Linux container
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Code
@@ -40,13 +42,14 @@ jobs:
       - name: Package Native Desktop Application
         run: bunx electrobun build --env=stable
 
-      - name: Upload Finished Executables
-        uses: actions/upload-artifact@v4
-        with:
-          name: App-${{ matrix.os }}
-          path: |
-            artifacts/*.dmg
-            artifacts/*.exe
-            artifacts/*linux*
-            artifacts/*.deb
-            artifacts/*.AppImage
+      - name: Upload Binaries Direct to GitHub Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The 'gh release create' command gracefully creates the release if it doesn't exist,
+          # or simply uploads new files to it if another OS runner already created it.
+          gh release create ${{ github.ref_name }} artifacts/* \
+            --title "Release ${{ github.ref_name }}" \
+            --generate-notes \
+            --clobber
