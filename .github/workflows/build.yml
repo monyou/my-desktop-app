@@ -46,9 +46,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Creates or updates a single rolling release named "latest-build"
-          gh release create latest-build artifacts/* \
+          # 1. Safely try to create the release base if it doesn't exist yet
+          gh release create latest-build \
             --title "Continuous Build (Bleeding Edge)" \
             --notes "Automated build from the latest commit on the release branch." \
-            --prerelease \
-            --clobber
+            --prerelease || true
+
+          # 2. Upload the fresh assets, overwriting the old ones cleanly
+          gh release upload latest-build artifacts/* --clobber
