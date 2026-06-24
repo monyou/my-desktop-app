@@ -1,0 +1,52 @@
+name: Build Desktop Apps
+
+on:
+  push:
+    branches: [release]
+
+jobs:
+  release:
+    name: Build Cross-Platform Targets
+    strategy:
+      matrix:
+        # Added ubuntu-latest to spin up a native Linux container
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Linux environments require essential build tools and GTK/Webkit headers
+      # so Electrobun can bind to the native desktop shell
+      - name: Install Linux Build Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Project Dependencies
+        run: bun install
+
+      - name: Compile SvelteKit Frontend
+        run: bun run build
+
+      - name: Package Native Desktop Application
+        run: bunx electrobun build --env=stable
+
+      - name: Upload Finished Executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*linux*
+            dist/*.deb
+            dist/*.AppImage
